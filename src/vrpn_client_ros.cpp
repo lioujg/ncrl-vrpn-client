@@ -146,7 +146,15 @@ namespace vrpn_client_ros
     ros::Publisher *pose_pub;
     std::size_t sensor_index(0);
     ros::NodeHandle nh = tracker->output_nh_;
-    
+
+    float pos_x_cm = tracker_pose.pos[0] * 100.0f;
+    float pos_y_cm = tracker_pose.pos[1] * 100.0f;
+    float pos_z_cm = tracker_pose.pos[2] * 100.0f;
+
+    ROS_INFO("position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
+	     pos_x_cm, pos_y_cm, pos_z_cm, 
+	     tracker_pose.quat[0], tracker_pose.quat[1], tracker_pose.quat[2], tracker_pose.quat[3]);
+ 
     if (tracker->process_sensor_id_)
     {
       sensor_index = static_cast<std::size_t>(tracker_pose.sensor);
