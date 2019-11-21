@@ -21,6 +21,7 @@ include_directories(
 
 add_library(vrpn_client_ros
   src/vrpn_client_ros.cpp
+  src/serial.cpp
 )
 target_link_libraries(vrpn_client_ros
   ${catkin_LIBRARIES}

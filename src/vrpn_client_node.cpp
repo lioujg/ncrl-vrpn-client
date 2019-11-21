@@ -30,12 +30,14 @@
 */
 
 #include "vrpn_client_ros/vrpn_client_ros.h"
+#include "vrpn_client_ros/serial.hpp"
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "vrpn_client_node");
   ros::NodeHandle nh, private_nh("~");
   vrpn_client_ros::VrpnClientRos client(nh, private_nh);
+  serial_init((char *)"/dev/ttyUSB0", 57600);
   ros::spin();
   return 0;
 }

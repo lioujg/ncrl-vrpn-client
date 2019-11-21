@@ -30,6 +30,7 @@
 */
 
 #include "vrpn_client_ros/vrpn_client_ros.h"
+#include "vrpn_client_ros/serial.hpp"
 
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2/LinearMath/Matrix3x3.h"
@@ -151,10 +152,15 @@ namespace vrpn_client_ros
     float pos_y_cm = tracker_pose.pos[1] * 100.0f;
     float pos_z_cm = tracker_pose.pos[2] * 100.0f;
 
+    float quat_x = tracker_pose.quat[0];
+    float quat_y = tracker_pose.quat[1];
+    float quat_z = tracker_pose.quat[2];
+    float quat_w = tracker_pose.quat[3];
+
     ROS_INFO("position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
-	     pos_x_cm, pos_y_cm, pos_z_cm, 
-	     tracker_pose.quat[0], tracker_pose.quat[1], tracker_pose.quat[2], tracker_pose.quat[3]);
- 
+	     pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+    send_pose_to_serial(pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+
     if (tracker->process_sensor_id_)
     {
       sensor_index = static_cast<std::size_t>(tracker_pose.sensor);
