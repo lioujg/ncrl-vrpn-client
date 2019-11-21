@@ -41,7 +41,7 @@ void serial_init(char *port_name, int baudrate)
 		options.c_cflag |= B115200;
 		break;
 	default:
-		ROS_INFO("Unknown baudrate. try 9600, 57600, 115200 or check \"serial.cpp\".");
+		ROS_FATAL("Unknown baudrate. try 9600, 57600, 115200 or check \"serial.cpp\".");
 		exit(0);
 	}
 
