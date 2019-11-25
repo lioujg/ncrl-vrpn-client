@@ -5,10 +5,24 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <inttypes.h>
-#include <string.h>
+#include <string>
 #include "ros/ros.h"
 
+using namespace std;
+
 int serial_fd = 0;
+
+int check_rigid_body_name(string &name)
+{
+	char *end[1];
+	strtol(name.c_str(), end, 0);
+	if (*end == NULL) {
+		ROS_INFO("Invalid rigid body name, rigid body name must be a number");
+		return 1;
+	}
+
+	return 0;
+}
 
 void serial_init(char *port_name, int baudrate)
 {
