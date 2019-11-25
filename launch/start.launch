@@ -7,6 +7,9 @@
       server: $(arg server)
       port: 3883
 
+      baudrate: 115200
+      port: "/dev/ttyUSB0"
+
       update_frequency: 100.0
       frame_id: world
 

@@ -31,14 +31,33 @@
 
 #include "vrpn_client_ros/vrpn_client_ros.h"
 #include "vrpn_client_ros/serial.hpp"
+#include <string.h>
+
+using namespace std;
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "vrpn_client_node");
   ros::NodeHandle nh, private_nh("~");
   vrpn_client_ros::VrpnClientRos client(nh, private_nh);
+
+  string port_s;
+  if(nh.getParam("port", port_s) == false) {
+    ROS_FATAL("No serial port is assigned.");
+    exit(0);
+  }
+
+  string baudrate_s;
+  if(nh.getParam("baudrate", baudrate_s) == false) {
+    ROS_FATAL("No serial baudrate is assigned.");
+    exit(0);
+  }
+
+  int baudrate = stoi(baudrate_s);
+  //serial_init((char *)port_s.c_str(), baudrate);
   serial_init((char *)"/dev/ttyUSB0", 115200);
-  ros::spin();
+ 
+ ros::spin();
   return 0;
 }
 
