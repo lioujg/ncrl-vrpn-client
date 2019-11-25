@@ -72,7 +72,7 @@ void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 {
 	static double last_execute_time = 0;
 	static double current_time;
-	const double send_freq = 30; //expected send frequency
+	const double send_freq = 30; //expected sending frequency
 	double send_period = 1.0f / send_freq;
 
 	current_time = ros::Time::now().toSec();
@@ -81,14 +81,14 @@ void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 		return;
 	}
 
-	double real_freq = 1.0f / (current_time - last_execute_time); //real send frequeuncy
+	double real_freq = 1.0f / (current_time - last_execute_time); //real sending frequeuncy
 
 	last_execute_time = current_time;
 
 	ROS_INFO("[%fHz] position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
         	 real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
-	//size = start_byte + checksum + (float * 7) = 30bytes
+	//size = start_byte + checksum + (float * 7) = 31bytes
 	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0}; 
 	int msg_pos = 0;
 
