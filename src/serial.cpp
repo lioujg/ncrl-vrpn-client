@@ -66,18 +66,21 @@ static uint8_t generate_optitrack_checksum_byte(uint8_t *payload, int payload_co
 	return result;
 }
 
-#define OPTITRACK_SERIAL_MSG_SIZE 30
+#define OPTITRACK_SERIAL_MSG_SIZE 31
 void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 			 float quat_x, float quat_y, float quat_z, float quat_w)
 {
+	/* TODO: control send frequency */
+	sleep(1);
+
 	//size = start_byte + checksum + (float * 7) = 30bytes
 	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0}; 
 	int msg_pos = 0;
 
 	/* reserve 2 for start byte and checksum byte as header */
-	msg_buf[msg_pos] = '@';
+	msg_buf[msg_pos] = '@'; //start byte
 	msg_pos += sizeof(uint8_t);
-	msg_buf[msg_pos++] = 0;
+	msg_buf[msg_pos] = 0;
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
@@ -96,8 +99,11 @@ void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 	memcpy(msg_buf + msg_pos, &quat_w, sizeof(float));
 	msg_pos += sizeof(float);
 
-	/* generate and fill the checksum field */
-	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[2], OPTITRACK_SERIAL_MSG_SIZE - 2);
+        msg_buf[msg_pos] = '+'; //end byte
+	msg_pos += sizeof(uint8_t);
 
-	serial_puts(msg_buf, msg_pos++);
+	/* generate and fill the checksum field */
+	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[2], OPTITRACK_SERIAL_MSG_SIZE - 3);
+
+	serial_puts(msg_buf, msg_pos);
 }
