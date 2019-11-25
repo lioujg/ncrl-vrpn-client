@@ -66,7 +66,7 @@ static uint8_t generate_optitrack_checksum_byte(uint8_t *payload, int payload_co
 	return result;
 }
 
-#define OPTITRACK_SERIAL_MSG_SIZE 31
+#define OPTITRACK_SERIAL_MSG_SIZE 32
 void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 			 float quat_x, float quat_y, float quat_z, float quat_w)
 {
@@ -97,6 +97,8 @@ void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 	msg_pos += sizeof(uint8_t);
 	msg_buf[msg_pos] = 0;
 	msg_pos += sizeof(uint8_t);
+	msg_buf[msg_pos] = 0; //TODO:mav_id
+	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
 	memcpy(msg_buf + msg_pos, &pos_x_cm, sizeof(float));
@@ -118,7 +120,7 @@ void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 	msg_pos += sizeof(uint8_t);
 
 	/* generate and fill the checksum field */
-	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[2], OPTITRACK_SERIAL_MSG_SIZE - 3);
+	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[3], OPTITRACK_SERIAL_MSG_SIZE - 4);
 
 	serial_puts(msg_buf, msg_pos);
 }
