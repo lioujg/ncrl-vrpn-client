@@ -70,8 +70,23 @@ static uint8_t generate_optitrack_checksum_byte(uint8_t *payload, int payload_co
 void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
 			 float quat_x, float quat_y, float quat_z, float quat_w)
 {
-	/* TODO: control send frequency */
-	sleep(1);
+	static double last_execute_time = 0;
+	static double current_time;
+	const double send_freq = 30; //expected send frequency
+	double send_period = 1.0f / send_freq;
+
+	current_time = ros::Time::now().toSec();
+
+	if((current_time - last_execute_time) < send_period) {
+		return;
+	}
+
+	double real_freq = 1.0f / (current_time - last_execute_time); //real send frequeuncy
+
+	last_execute_time = current_time;
+
+	ROS_INFO("[%fHz] position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
+        	 real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
 	//size = start_byte + checksum + (float * 7) = 30bytes
 	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0}; 

@@ -157,8 +157,6 @@ namespace vrpn_client_ros
     float quat_z = tracker_pose.quat[2];
     float quat_w = tracker_pose.quat[3];
 
-    ROS_INFO("position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
-	     pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
     send_pose_to_serial(pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
     if (tracker->process_sensor_id_)
