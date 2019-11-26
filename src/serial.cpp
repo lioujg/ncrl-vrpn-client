@@ -12,7 +12,7 @@ using namespace std;
 
 int serial_fd = 0;
 
-int check_rigid_body_name(char *name)
+int check_rigid_body_name(char *name, int *id)
 {
 	char tracker_id_s[100] = {0};
 
@@ -26,10 +26,12 @@ int check_rigid_body_name(char *name)
 	int tracker_id = std::strtol(tracker_id_s, &end, 10);
 	if (*end != '\0' || end == tracker_id_s) { //FIXME
 		ROS_FATAL("Invalid tracker name %s, correct format: MAV + number, e.g: MAV1", name);
-		exit(0);
+		return 1;
 	}
 
-	return tracker_id;
+	*id = tracker_id;
+
+	return 0;
 }
 
 void serial_init(char *port_name, int baudrate)
@@ -97,7 +99,10 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	const double send_freq = 30; //expected sending frequency
 	double send_period = 1.0f / send_freq;
 
-	int tracker_id = check_rigid_body_name(tracker_name);
+	int tracker_id;
+	if(check_rigid_body_name(tracker_name, &tracker_id)) {
+		return;
+	}
 
 	current_time = ros::Time::now().toSec();
 
@@ -109,7 +114,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 
 	last_execute_time = current_time;
 
-	ROS_INFO("[%fHz] id:%d position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
+	ROS_INFO("[%fHz] id:%d, position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
         	 tracker_id, real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
 	//size = start_byte + checksum + (float * 7) = 31bytes
