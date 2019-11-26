@@ -12,16 +12,24 @@ using namespace std;
 
 int serial_fd = 0;
 
-int check_rigid_body_name(string &name)
+int check_rigid_body_name(char *name)
 {
-	char *end[1];
-	strtol(name.c_str(), end, 0);
-	if (*end == NULL) {
-		ROS_INFO("Invalid rigid body name, rigid body name must be a number");
-		return 1;
+	char tracker_id_s[100] = {0};
+
+	if(name[0] == 'M' && name[1] == 'A' && name[2] == 'V') {
+		strncpy(tracker_id_s, name + 3, strlen(name) - 3);
 	}
 
-	return 0;
+	//ROS_INFO("%s -> %s", name, tracker_id_s);
+
+	char *end[1];
+	int tracker_id = strtol(tracker_id_s, end, 0);
+	if (*end > tracker_id_s || *end == NULL) { //FIXME
+		ROS_FATAL("Invalid tracker name, correct format: MAV + number, e.g: MAV1");
+		exit(0);
+	}
+
+	return tracker_id;
 }
 
 void serial_init(char *port_name, int baudrate)
@@ -81,13 +89,15 @@ static uint8_t generate_optitrack_checksum_byte(uint8_t *payload, int payload_co
 }
 
 #define OPTITRACK_SERIAL_MSG_SIZE 32
-void send_pose_to_serial(float pos_x_cm, float pos_y_cm, float pos_z_cm,
+void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, float pos_z_cm,
 			 float quat_x, float quat_y, float quat_z, float quat_w)
 {
 	static double last_execute_time = 0;
 	static double current_time;
 	const double send_freq = 30; //expected sending frequency
 	double send_period = 1.0f / send_freq;
+
+	check_rigid_body_name(tracker_name);
 
 	current_time = ros::Time::now().toSec();
 

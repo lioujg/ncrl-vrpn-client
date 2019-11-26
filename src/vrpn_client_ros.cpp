@@ -157,7 +157,9 @@ namespace vrpn_client_ros
     float quat_z = tracker_pose.quat[2];
     float quat_w = tracker_pose.quat[3];
 
-    send_pose_to_serial(pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+    char tracker_name[100] = {0};
+    strcpy(tracker_name, tracker->tracker_name.c_str());
+    send_pose_to_serial((char *)tracker_name, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
     if (tracker->process_sensor_id_)
     {

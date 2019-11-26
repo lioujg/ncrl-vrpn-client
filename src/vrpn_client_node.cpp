@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "vrpn_client_node");
   ros::NodeHandle nh, private_nh("~");
   vrpn_client_ros::VrpnClientRos client(nh, private_nh);
-
+#if 0
   string port_s;
   if(nh.getParam("port", port_s) == false) {
     ROS_FATAL("No serial port is assigned.");
@@ -54,7 +54,8 @@ int main(int argc, char **argv)
   }
 
   int baudrate = stoi(baudrate_s);
-  //serial_init((char *)port_s.c_str(), baudrate);
+  serial_init((char *)port_s.c_str(), baudrate);
+#endif
   serial_init((char *)"/dev/ttyUSB0", 115200);
  
  ros::spin();
