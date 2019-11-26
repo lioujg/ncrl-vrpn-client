@@ -96,7 +96,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 {
 	static double last_execute_time = 0;
 	static double current_time;
-	const double send_freq = 30; //expected sending frequency
+	const double send_freq = 70; //expected sending frequency
 	double send_period = 1.0f / send_freq;
 
 	int tracker_id;
