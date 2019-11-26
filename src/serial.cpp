@@ -22,10 +22,10 @@ int check_rigid_body_name(char *name)
 
 	//ROS_INFO("%s -> %s", name, tracker_id_s);
 
-	char *end[1];
-	int tracker_id = strtol(tracker_id_s, end, 0);
-	if (*end > tracker_id_s || *end == NULL) { //FIXME
-		ROS_FATAL("Invalid tracker name, correct format: MAV + number, e.g: MAV1");
+	char *end;
+	int tracker_id = std::strtol(tracker_id_s, &end, 10);
+	if (*end != '\0' || end == tracker_id_s) { //FIXME
+		ROS_FATAL("Invalid tracker name %s, correct format: MAV + number, e.g: MAV1", name);
 		exit(0);
 	}
 
@@ -97,7 +97,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	const double send_freq = 30; //expected sending frequency
 	double send_period = 1.0f / send_freq;
 
-	check_rigid_body_name(tracker_name);
+	int tracker_id = check_rigid_body_name(tracker_name);
 
 	current_time = ros::Time::now().toSec();
 
@@ -109,8 +109,8 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 
 	last_execute_time = current_time;
 
-	ROS_INFO("[%fHz] position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
-        	 real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+	ROS_INFO("[%fHz] id:%d position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
+        	 tracker_id, real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
 
 	//size = start_byte + checksum + (float * 7) = 31bytes
 	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0}; 
@@ -121,7 +121,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	msg_pos += sizeof(uint8_t);
 	msg_buf[msg_pos] = 0;
 	msg_pos += sizeof(uint8_t);
-	msg_buf[msg_pos] = 0; //TODO:mav_id
+	msg_buf[msg_pos] = tracker_id;
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
