@@ -96,7 +96,9 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 {
 	static double last_execute_time = 0;
 	static double current_time;
-	const double send_freq = 70; //expected sending frequency
+	/* send_freq set to 40Hz is about 30Hz in real, it is almost the hightest frequency that
+	 * flight control board can received without using uart flow control */
+	const double send_freq = 40; //expected sending frequency
 	double send_period = 1.0f / send_freq;
 
 	int tracker_id;
