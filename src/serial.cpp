@@ -37,7 +37,7 @@ int check_rigid_body_name(char *name, int *id)
 void serial_init(char *port_name, int baudrate)
 {
 	//open the port
-	serial_fd = open(port_name, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	serial_fd = open(port_name, O_RDWR | O_NOCTTY /*| O_NONBLOCK*/);
 
 	if(serial_fd == -1) {
 		ROS_FATAL("Failed to open the serial port.");
@@ -96,10 +96,6 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 {
 	static double last_execute_time = 0;
 	static double current_time;
-	/* send_freq set to 40Hz is about 30Hz in real, it is almost the hightest frequency that
-	 * flight control board can received without using uart flow control */
-	const double send_freq = 40; //expected sending frequency
-	double send_period = 1.0f / send_freq;
 
 	int tracker_id;
 	if(check_rigid_body_name(tracker_name, &tracker_id)) {
@@ -108,19 +104,20 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 
 	current_time = ros::Time::now().toSec();
 
-	if((current_time - last_execute_time) < send_period) {
-		return;
-	}
-
 	double real_freq = 1.0f / (current_time - last_execute_time); //real sending frequeuncy
 
 	last_execute_time = current_time;
 
-	ROS_INFO("[%fHz] id:%d, position=(x:%.2f, y:%.2f, z:%.2f), orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
-        	 tracker_id, real_freq, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+	ROS_INFO("[%fHz] id:%d, position=(x:%.2f, y:%.2f, z:%.2f), "
+                 "orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
+        	 tracker_id, real_freq,
+                 pos_x_cm, pos_y_cm, pos_z_cm,
+                 quat_x, quat_y, quat_z, quat_w);
 
-	//size = start_byte + checksum + (float * 7) = 31bytes
-	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0}; 
+	/*+------------+----------+----+---+---+---+----+----+----+----+----------+
+         *| start byte | checksum | id | x | y | z | qx | qy | qz | qw | end byte |
+         *+------------+----------+----+---+---+---+----+----+----+----+----------+*/
+	char msg_buf[OPTITRACK_SERIAL_MSG_SIZE] = {0};
 	int msg_pos = 0;
 
 	/* reserve 2 for start byte and checksum byte as header */
@@ -128,7 +125,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	msg_pos += sizeof(uint8_t);
 	msg_buf[msg_pos] = 0;
 	msg_pos += sizeof(uint8_t);
-	msg_buf[msg_pos] = tracker_id;
+	msg_buf[msg_pos] = 0;//tracker_id;
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
@@ -153,5 +150,5 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	/* generate and fill the checksum field */
 	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[3], OPTITRACK_SERIAL_MSG_SIZE - 4);
 
-	serial_puts(msg_buf, msg_pos);
+	serial_puts(msg_buf, OPTITRACK_SERIAL_MSG_SIZE);
 }
