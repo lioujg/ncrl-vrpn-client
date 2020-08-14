@@ -148,9 +148,9 @@ namespace vrpn_client_ros
     std::size_t sensor_index(0);
     ros::NodeHandle nh = tracker->output_nh_;
 
-    float pos_x_cm = tracker_pose.pos[0] * 100.0f;
-    float pos_y_cm = tracker_pose.pos[1] * 100.0f;
-    float pos_z_cm = tracker_pose.pos[2] * 100.0f;
+    float pos_x_m = tracker_pose.pos[0];
+    float pos_y_m = tracker_pose.pos[1];
+    float pos_z_m = tracker_pose.pos[2];
 
     float quat_x = tracker_pose.quat[0];
     float quat_y = tracker_pose.quat[1];
@@ -159,7 +159,7 @@ namespace vrpn_client_ros
 
     char tracker_name[100] = {0};
     strcpy(tracker_name, tracker->tracker_name.c_str());
-    send_pose_to_serial((char *)tracker_name, pos_x_cm, pos_y_cm, pos_z_cm, quat_x, quat_y, quat_z, quat_w);
+    send_pose_to_serial((char *)tracker_name, pos_x_m, pos_y_m, pos_z_m, quat_x, quat_y, quat_z, quat_w);
 
     if (tracker->process_sensor_id_)
     {

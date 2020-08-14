@@ -91,7 +91,7 @@ static uint8_t generate_optitrack_checksum_byte(uint8_t *payload, int payload_co
 }
 
 #define OPTITRACK_SERIAL_MSG_SIZE 32
-void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, float pos_z_cm,
+void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float pos_z_m,
 			 float quat_x, float quat_y, float quat_z, float quat_w)
 {
 	static double last_execute_time = 0;
@@ -111,7 +111,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	ROS_INFO("[%fHz] id:%d, position=(x:%.2f, y:%.2f, z:%.2f), "
                  "orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
         	 tracker_id, real_freq,
-                 pos_x_cm, pos_y_cm, pos_z_cm,
+                 pos_x_m * 100.0f, pos_y_m * 100.0f, pos_z_m * 100.0f,
                  quat_x, quat_y, quat_z, quat_w);
 
 	/*+------------+----------+----+---+---+---+----+----+----+----+----------+
@@ -129,11 +129,11 @@ void send_pose_to_serial(char *tracker_name, float pos_x_cm, float pos_y_cm, flo
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
-	memcpy(msg_buf + msg_pos, &pos_x_cm, sizeof(float));
+	memcpy(msg_buf + msg_pos, &pos_x_m, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &pos_y_cm, sizeof(float));
+	memcpy(msg_buf + msg_pos, &pos_y_m, sizeof(float));
 	msg_pos += sizeof(float);
-	memcpy(msg_buf + msg_pos, &pos_z_cm, sizeof(float));
+	memcpy(msg_buf + msg_pos, &pos_z_m, sizeof(float));
 	msg_pos += sizeof(float);
 	memcpy(msg_buf + msg_pos, &quat_x, sizeof(float));
 	msg_pos += sizeof(float);
