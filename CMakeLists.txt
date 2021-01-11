@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vrpn_client_ros)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/vrpn/cmake/")
+
 find_package(catkin REQUIRED COMPONENTS geometry_msgs roscpp tf2_ros)
 find_package(VRPN REQUIRED)
 
