@@ -8,9 +8,13 @@
 #include <string>
 #include "ros/ros.h"
 
+#define MAX_MARKER_CNT 100
+
+int marker_cnt = 0;
+
 using namespace std;
 
-int serial_fd = 0;
+int serial_fd[MAX_MARKER_CNT] = {0};
 
 int check_rigid_body_name(char *name, int *id)
 {
@@ -34,12 +38,12 @@ int check_rigid_body_name(char *name, int *id)
 	return 0;
 }
 
-void serial_init(char *port_name, int baudrate)
+void reg_serial_with_marker(int id, char *port_name, int baudrate)
 {
 	//open the port
-	serial_fd = open(port_name, O_RDWR | O_NOCTTY /*| O_NONBLOCK*/);
+	serial_fd[id] = open(port_name, O_RDWR | O_NOCTTY /*| O_NONBLOCK*/);
 
-	if(serial_fd == -1) {
+	if(serial_fd[id] == -1) {
 		ROS_FATAL("Failed to open the serial port.");
 		exit(0);
 	}
@@ -47,7 +51,7 @@ void serial_init(char *port_name, int baudrate)
 	//config the port
 	struct termios options;
 
-	tcgetattr(serial_fd, &options);
+	tcgetattr(serial_fd[id], &options);
 
 	options.c_cflag = CS8 | CLOCAL | CREAD;
 	options.c_iflag = IGNPAR;
@@ -69,13 +73,15 @@ void serial_init(char *port_name, int baudrate)
 		exit(0);
 	}
 
-	tcflush(serial_fd, TCIFLUSH);
-	tcsetattr(serial_fd, TCSANOW, &options);
+	tcflush(serial_fd[id], TCIFLUSH);
+	tcsetattr(serial_fd[id], TCSANOW, &options);
+
+	marker_cnt++;
 }
 
-void serial_puts(char *s, size_t size)
+void serial_puts(int id, char *s, size_t size)
 {
-	write(serial_fd, s, size);
+	write(serial_fd[id], s, size);
 }
 
 #define OPTITRACK_CHECKSUM_INIT_VAL 19
@@ -102,15 +108,20 @@ void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float
 		return;
 	}
 
+	if(tracker_id > marker_cnt) {
+		ROS_WARN("%s is not registered for serial I/O!", tracker_name);
+		return;
+	}
+
 	current_time = ros::Time::now().toSec();
 
 	double real_freq = 1.0f / (current_time - last_execute_time); //real sending frequeuncy
 
 	last_execute_time = current_time;
 
-	ROS_INFO("[%fHz] id:%d, position=(x:%.2f, y:%.2f, z:%.2f), "
-                 "orientation=(x:%.2f, y:%.2f, z:%.2f, w:%.2f)",
-        	 tracker_id, real_freq,
+	ROS_INFO("[%fHz] id:%d, position=(x:%.2lf, y:%.2lf, z:%.2lf), "
+                 "orientation=(x:%.2lf, y:%.2lf, z:%.2lf, w:%.2lf)",
+        	 real_freq, tracker_id,
                  pos_x_m * 100.0f, pos_y_m * 100.0f, pos_z_m * 100.0f,
                  quat_x, quat_y, quat_z, quat_w);
 
@@ -125,7 +136,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float
 	msg_pos += sizeof(uint8_t);
 	msg_buf[msg_pos] = 0;
 	msg_pos += sizeof(uint8_t);
-	msg_buf[msg_pos] = 0;//tracker_id;
+	msg_buf[msg_pos] = tracker_id;
 	msg_pos += sizeof(uint8_t);
 
 	/* pack payloads */
@@ -150,5 +161,5 @@ void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float
 	/* generate and fill the checksum field */
 	msg_buf[1] = generate_optitrack_checksum_byte((uint8_t *)&msg_buf[3], OPTITRACK_SERIAL_MSG_SIZE - 4);
 
-	serial_puts(msg_buf, OPTITRACK_SERIAL_MSG_SIZE);
+	serial_puts(tracker_id, msg_buf, OPTITRACK_SERIAL_MSG_SIZE);
 }

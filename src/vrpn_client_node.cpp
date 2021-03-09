@@ -56,7 +56,8 @@ int main(int argc, char **argv)
   int baudrate = stoi(baudrate_s);
   serial_init((char *)port_s.c_str(), baudrate);
 #endif
-  serial_init((char *)"/dev/ttyUSB0", 115200);
+  reg_serial_with_marker(0, (char *)"/dev/ttyUSB0", 115200);
+  //reg_serial_with_marker(1, (char *)"/dev/ttyUSB1", 115200);
  
  ros::spin();
   return 0;
