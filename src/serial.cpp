@@ -29,7 +29,7 @@ int check_rigid_body_name(char *name, int *id)
 	char *end;
 	int tracker_id = std::strtol(tracker_id_s, &end, 10);
 	if (*end != '\0' || end == tracker_id_s) { //FIXME
-		ROS_FATAL("Invalid tracker name %s, correct format: MAV + number, e.g: MAV1", name);
+		// ROS_FATAL("Invalid tracker name %s, correct format: MAV + number, e.g: MAV1", name);
 		return 1;
 	}
 
@@ -108,7 +108,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float
 		return;
 	}
 
-	if(tracker_id > marker_cnt) {
+	if(serial_fd[tracker_id] == -1) {
 		ROS_WARN("%s is not registered for serial I/O!", tracker_name);
 		return;
 	}
