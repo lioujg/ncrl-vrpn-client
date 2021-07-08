@@ -10,7 +10,7 @@
 
 #define MAX_MARKER_CNT 100
 
-int marker_cnt = 0;
+int marker_cnt[MAX_MARKER_CNT + 1] = {0};
 
 using namespace std;
 
@@ -76,7 +76,7 @@ void reg_serial_with_marker(int id, char *port_name, int baudrate)
 	tcflush(serial_fd[id], TCIFLUSH);
 	tcsetattr(serial_fd[id], TCSANOW, &options);
 
-	marker_cnt++;
+	marker_cnt[id] = 1;
 }
 
 void serial_puts(int id, char *s, size_t size)
@@ -108,7 +108,7 @@ void send_pose_to_serial(char *tracker_name, float pos_x_m, float pos_y_m, float
 		return;
 	}
 
-	if(serial_fd[tracker_id] == -1) {
+	if(marker_cnt[tracker_id] == 0) {
 		ROS_WARN("%s is not registered for serial I/O!", tracker_name);
 		return;
 	}
